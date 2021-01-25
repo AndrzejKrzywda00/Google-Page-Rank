@@ -61,19 +61,24 @@ I = ones(N,N);             % odpowiednia macierz jednostkowa
 L = d.*M + ((1-d)/N).*I;  % ważne przekształcenie macierzy M -> L
 %image(L*2550);
 
-[V,D] = eig(M);
+[V,D,W] = eig(L);
 sumo = zeros(1,N);
 
 for i = 1:N
     summ = 0;
     for j = 1:N
+        if ( i == j )
+            if ( M(i,j) ~= 0 )
+                disp(i+" "+j);
+            end
+        end
         summ = summ + M(j,i); 
     end
     sumo(i) = summ;
 end
 
 % wybieram iteracyjną metodę potęgową i wyliczam kolejne wartości r
-r_prim = L*r;
+r_prim = L * r;
 howManyIterations = 1;
 
 while (~endComputingL(r,r_prim,N))
@@ -81,6 +86,26 @@ while (~endComputingL(r,r_prim,N))
     r_prim = L * r_prim;
     howManyIterations = howManyIterations + 1;
 end
+
+% kod sprawdzający czy wyliczono poprawny wektor własny macierzy
+sumr = 0;
+for z = 1:N
+    sumr = sumr + r_prim(z);
+end
+
+% sortowanie wyniku, żeby pokazać kolejność stron na liście wyszukiwania
+fullFinal = [(1:N)',r_prim];
+finalList = sortrows(fullFinal,2,'descend');
+
+% wypisywanie wyniku ostatecznego
+% wag wyszukiwania dla kolejnych numerów stron internetowych
+figure('Renderer', 'painters', 'Position', [10 10 900 600]);
+bar(1:N,r_prim,'green');
+title('Ważność kolejnych stron internetowych');
+subtitle('Określona jako % czasu statystyczny użytkownik będzie na niej przebywał');
+xlabel('indeks strony internetowej');
+ylabel('metryka ważności strony internetowej');
+
 
 %% obszar definiowania funkcji
 
@@ -98,17 +123,15 @@ function genMatrix = generateWebMatrix(N)
     % dla każdej kolumny losuję ile będzie połączeń -- liczba z zakresu od
     % 1 do N
     for i = 1:N
-        % losuję ile będzie połączeń
-        % podaję parametry
-        %% MAGIC NUMBERS !!! - FIX
-        mean = 6;
-        standardDeviation = 5;
-        howManyConnections = GenConnections(mean,standardDeviation);
         
-        if ( howManyConnections > 0 )                                 % tylko gdy są połączenia
-            indexes = getIndexes(howManyConnections,N,fullIndexes); % ustalam listę bez powtórzeń, na jakich indeksach wystąpią połączenia
+        % losuję ile będzie połączeń
+        howManyConnections = genConnections(N);
+        reducedIndexes = reduceList(fullIndexes,N,i);
+        
+        if ( howManyConnections > 0 )                                      % tylko gdy są połączenia
+            indexes = getIndexes(howManyConnections,N,reducedIndexes);     % ustalam listę bez powtórzeń, na jakich indeksach wystąpią połączenia
             for j = 1:howManyConnections
-                M(indexes(j),i) = 1/howManyConnections;               % przypisuję odpowiednim kolumnom ustaloną stałą wartość
+                M(indexes(j),i) = 1/howManyConnections;                    % przypisuję odpowiednim kolumnom ustaloną stałą wartość
             end
         end
     end
@@ -145,10 +168,15 @@ end
 %% funkcja generuje losowo o określonych parametrach ilość linków ze strony
 % jest to po prostu zmodyfikowany rozkład normalny
 
-function howManyLinks = GenConnections(mean,standardDeviation)
+function howManyLinks = genConnections(N)
+    mean = N/10+1;          % statystycznie dobra wartość
+    standardDeviation = N/10;
     generatedNum = round(random('Normal',mean,standardDeviation)); % generating Normal distribution with my custom parameters
-    if ( generatedNum < 0 )
-        generatedNum = 0;
+    if ( generatedNum < 1 )
+        generatedNum = 1;
+    end
+    if ( generatedNum > N-1 )
+        generatedNum = N-1;             % ilość połączeń nie może być równa N bo oznaczałoby to link strony do samej siebie
     end
     howManyLinks = generatedNum;
 end
@@ -157,26 +185,42 @@ end
 %% funkcja generująca losowy zbiór indeksów na których wystąpią połączenia
 % jest złożeniem funkcji randperm() z losowymi parametrami innych rozkładów
 
-function indexesList = getIndexes(howManyIndexes,N,fullIndexes)
+function indexesList = getIndexes(howManyIndexes,N,permitedIndexes)
+    
+    % tu muszę zwracać listę bez powtórzeń i bez trafiania w indeks zajęty
+
     generatedList = zeros(1,howManyIndexes);
-    mean = N/2;                                        % dokładnie wartość środkowa zbioru
-    howDenseParameter = 6;                             % parametr rozrzucenia rozkładu
-    standardDeviation = N/howDenseParameter;           % 95,9 % wyników mieści się w przedziale <1;N>
+    mean = (N-1)/2;                                         % dokładnie wartość środkowa zbioru
+    howDenseParameter = 6;                                  % parametr rozrzucenia rozkładu
+    standardDeviation = (N-1)/howDenseParameter;            % 95,9 % wyników mieści się w przedziale <1;N>
+    freeIndexes = permitedIndexes;
+    
     for i = 1:howManyIndexes
         
+        % hMi razy muszę wylosować indeks odpowiedni z kurczącej
+        % się listy freeIndexes
         currentIndex = round(random('Normal',mean,standardDeviation));
         
-        if ( currentIndex > N )
-            currentIndex = N;
+        if ( currentIndex > N-i )
+            currentIndex = N-i;
         end
         
         if ( currentIndex < 1 )
             currentIndex = 1;
         end
         
-        generatedList(i) = fullIndexes(currentIndex);
+        % aktualizacja wartości rozkładu
+        mean = (N-(i+1))/2;
+        standardDeviation = (N-(i+1))/howDenseParameter;
+        
+        % dopisanie wartości do zmiennej zwracanej
+        generatedList(i) = freeIndexes(currentIndex);
+        
+        % obcięcie listy free indexes o odpowiednią wartość
+        freeIndexes = reduceList(freeIndexes,N-i,currentIndex);
     end
-    indexesList = generatedList;                       % zwraca listę o długości howManyIndexes
+    % zwraca listę o długości howManyIndexes
+    indexesList = generatedList;
 end
 
 
@@ -211,12 +255,27 @@ end
 % to zwracam true; w przeciwnym przypadku false
 
 function metric = endComputingL(r,new_r,N)
-    error = 1/N;                               % idealnie gdyby to zależało od średniej wartości wpisu
+    error = 0.0001;                                % idealnie gdyby to zależało od średniej wartości wpisu
     for i = 1:N                                        
-        if ( abs(r(i)-new_r(i)) >= error )      % gdy tylko jedna różnica jest większa niż error to zwracam false
+        if ( abs(r(i)-new_r(i)) >= error )         % gdy tylko jedna różnica jest większa niż error to zwracam false
             metric = false;
             return;
         end
     end
     metric = true;
+end
+
+
+%% funkcja przyjmująca listę i zwracająca tę listę bez jednego elementu o określonym indeksie
+% złożoność liniowa
+
+function reducedList = reduceList(bigList,len,index)
+    p = 1;
+    reducedList = zeros(1,len-1);
+    for i = 1:len
+        if ( i~=index )
+            reducedList(p) = bigList(i);
+            p = p + 1;
+        end
+    end
 end
