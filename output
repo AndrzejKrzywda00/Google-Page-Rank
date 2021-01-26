@@ -9,6 +9,7 @@ na przykład : M(1,2) = 0,2 -> prawdopodobieństwo przejścia ze strony 1 do 2 w
 Dzięki manipulowaniu parametrami rozkładu normalnego, dla każdej kolumny uzyskuję rozkład równomierny,
 natomiast dla każdego wiersza rozkład jest asymetryczny.
 Widać to w obcenych charakterystycznych poziomych prążkach na histogramie macierzy (rys. 1).
+![alt text](https://github.com/AndrzejKrzywda00/Projekt_TONT/blob/master/output images/matrix_M.jpg?raw=true)
 
 Kilka stron zawiera wiele linków do nich, natomiast wiele stron zawiera niewiele linków do nich (rys. 2).
 
