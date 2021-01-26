@@ -2,10 +2,7 @@
 % Autor -- Andrzej Krzywda
 % Data -- 23.01.2021
 
-% rzeczy do ulepszenia, poprawienia
-% zaimplementować SMMP dla metody potęgowej
-% poprawić złożoność gotowymi macierzami wyliczonymi przed pętlami
-% poprwić komentarze i składnię w niektórych miejscach
+% rzecz
 
 clear;
 clc;
