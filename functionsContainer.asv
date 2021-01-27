@@ -4,8 +4,6 @@ classdef functionsContainer
     
     properties
         desription = "Object holds useful functions for web analysis";
-        lvl = 0;
-        vec = zeros(1,3);
     end
     
     methods
@@ -31,7 +29,7 @@ classdef functionsContainer
             patchIndicator = -1;            % stała wartość -- symbol charakterystyczny dla kompresji
             sequenceNumber = 1;
             outputVector = zeros(1,3);
-            [N,~] = size(M);
+            
 
             for i = 1:N
                 for j = 1:N
@@ -49,10 +47,13 @@ classdef functionsContainer
                             zeroCounter = 0;                % licznik zer jest zerowany
                             sequenceNumber = sequenceNumber + 1;    % numer sekwencyjny rośnie
                         else
-                            % trafiono w niezerową wartość ale licznik zer jest mniejszy od 4
-                            % za każdym razem przepisuję na sztywno wartości
+                            % trafiono w niezerową wartość ale licznik zer
+                            % jest mniejszy od 4
+                            % za każdym razem przepisuję na sztywno
+                            % wartości
                             for k = 1:zeroCounter
-                                % rozszerzanie wektora o odpowiednią ilośc zer
+                                % rozszerzanie wektora o odpowiednią ilośc
+                                % zer
                                 outputVector = [outputVector,0];
                             end
                             zeroCounter = 0;
@@ -68,9 +69,6 @@ classdef functionsContainer
             % można przejść do wyliczania współczynnika kompresji
             [~,lenV] = size(M);
             compressionLevel = lenV/(N*N);
-            
-            self.lvl = compressionLevel;
-            self.vec = outputVector;
 
         end 
 
