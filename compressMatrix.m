@@ -1,0 +1,64 @@
+%% Funkcja zapisująca macierz sparse NxN do skompresowanego formatu
+% można ją wykorzystać przy zapisywaniu macierzy stochastycznej
+% macierz jest konwertowana do wektora, o krótszej długości
+% macierz musi spełniać warunek nieujemności wartości zapisanych
+
+% Uwaga! funkcja kompresuje macierz liniowo od górnego lewego rogu
+% przez kolejne kolumny
+% następnie zmienia wiersz
+% funkcja jest czuła na ciągi dłuższe niż 3 zera
+
+% symbolem wskazującym na początek skompresowanego fragmentu jest -1
+% następnie następuje informacja jak wiele zer znajduje się w ciągu
+% następnie dopisywany jest numer sekwencyjny, dzięki niemu można sprawdzić
+% czy np. odtworzono poprawnie zaszyfrowany 
+
+function [compressionLevel,outputVector] = compressMatrix(M,tolerance)
+            
+zeroCounter = 0;                % parametr zliczający ile zer w danym ciągu wystąpi
+patchIndicator = -1;            % stała wartość -- symbol charakterystyczny dla kompresji
+sequenceNumber = 1;
+outputVector = [];
+[~,N] = size(M);
+
+for i = 1:N
+    for j = 1:N
+        if ( M(i,j) <= tolerance )
+            zeroCounter = zeroCounter + 1;      % to znaczy że trafiłem w wartość poniżej progu tolerancji
+        else
+            % trafiono w niezerową wartość
+            if ( zeroCounter >= 4 )             % agregacja następuje dla ciągów zer dłuższych niż 3
+                val = M(i,j);
+                outputVector = [outputVector,   % właściwy wektor zapisanych wartości
+                                patchIndicator, % "-1" znak informujący o początku zapisu ciągu zer
+                                zeroCounter,    % licznik ilości zer
+                                sequenceNumber, % numer sekwencyjny zapisu
+                                val];        % właściwa niezerowa wartość z macierzy
+                
+                zeroCounter = 0;                % licznik zer jest zerowany
+                sequenceNumber = sequenceNumber + 1;    % numer sekwencyjny rośnie
+            else
+                % trafiono w niezerową wartość ale licznik zer jest mniejszy od 4
+                % za każdym razem przepisuję na sztywno wartości
+                for k = 1:zeroCounter
+                    % rozszerzanie wektora o odpowiednią ilośc zer
+                    outputVector = [outputVector,0];
+                end
+                zeroCounter = 0;
+                outputVector = [outputVector,M(i,j)];
+            end
+            
+        end
+        
+    end
+end
+
+% skończyło się iterowanie po macierzy
+% można przejść do wyliczania współczynnika kompresji
+[~,lenV] = size(M);
+compressionLevel = lenV/(N*N);
+
+obj.var1 = outputVector;
+obj.var2 = compressionLevel;
+
+end

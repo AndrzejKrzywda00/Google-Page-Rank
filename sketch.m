@@ -8,5 +8,4 @@ M = [0,0,0,1;
     0,0,0,0;
     0,0,1,0];
 
-obj = functionsContainer;
-[obj,vec] = obj.compressMatrix(M);
+[obj,vec] = compressMatrix(M,0.001);
