@@ -12,7 +12,7 @@ Widać to w obcenych charakterystycznych poziomych prążkach na histogramie mac
 ![alt text](https://github.com/AndrzejKrzywda00/Projekt_TONT/blob/master/output_images/matrix_M.jpg?raw=true)
 
 Kilka stron zawiera wiele linków do nich, natomiast wiele stron zawiera niewiele linków do nich (rys. 2).
-![alt text](https://github.com/AndrzejKrzywda00/Projekt_TONT/blob/master/output_images/rows_density.jpg=100x100?raw=true)
+![alt text](https://github.com/AndrzejKrzywda00/Projekt_TONT/blob/master/output_images/rows_density.jpg?raw=true)
 
 Można też obejrzeć posortowany rozkład prawdopodobieństwa trafienia w daną stronę. (rys. 3).
 ![alt text](https://github.com/AndrzejKrzywda00/Projekt_TONT/blob/master/output_images/rows_distribution.jpg?raw=true)
